@@ -21,7 +21,10 @@
                     ->whereDate('check_in', $today)
                     ->first();
             @endphp
-
+            <form action="{{ route('logout') }}" method="POST">
+            @csrf
+            <button type="submit" class="btn btn-secondary">🚪 Logout</button>
+        </form>
             <div class="alert alert-secondary text-center">
                 ⏰ Waktu sekarang: <span id="current-time" class="fw-bold">{{ $currentTime }}</span>
             </div>
@@ -77,6 +80,11 @@
                     ✅ Anda sudah menyelesaikan absen masuk dan keluar.<br>
                     <small class="text-muted">Silakan absen besok lagi. ⏳</small>
                 </div>
+                <div class="text-center mt-3">
+                
+    </div>
+    
+</div>
             @endif
         </div>
     </div>
