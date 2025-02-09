@@ -16,7 +16,7 @@
                     <th class="border p-2">Lokasi Masuk</th>
                     <th class="border p-2">Lokasi Keluar</th>
                     <th class="border p-2">Foto Masuk</th>
-                    <th class="border p-2">Foto Keluar</th>
+                    <th class="border p-2">Foto Keluarsss</th>
                 </tr>
             </thead>
             <tbody>
