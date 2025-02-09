@@ -1,6 +1,4 @@
 <?php
-// app/Http/Middleware/RoleMiddleware.php
-
 namespace App\Http\Middleware;
 
 use Closure;
@@ -8,13 +6,15 @@ use Illuminate\Http\Request;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, ...$roles)
     {
-        if (auth()->check() && auth()->user()->role === $role) {
+        if (auth()->check() && in_array(auth()->user()->role, $roles)) {
             return $next($request);
         }
 
-        // Redirect ke halaman yang sesuai jika role tidak cocok
-        return redirect('/dashboard'); // Bisa disesuaikan
+        // Redirect sesuai role pengguna
+        return auth()->user()->role === 'admin'
+            ? redirect('/admin/dashboard')
+            : redirect('/dashboard');
     }
 }
