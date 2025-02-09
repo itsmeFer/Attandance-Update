@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\AttendanceController;
@@ -24,10 +23,11 @@ Route::middleware(['auth'])->group(function () {
 
 // Route untuk admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+    // Mengarahkan ke Livewire Admin Dashboard
+    Route::get('/admin/dashboard', \App\Http\Livewire\Admin\Dashboard::class)->name('admin.dashboard');
 });
 
-// Route untuk karyawan (Tanpa Livewire)
+// Route untuk karyawan
 Route::middleware(['auth', 'role:karyawan'])->group(function () {
     Route::get('/karyawan/absen', [AttendanceController::class, 'show'])->name('absen.show');
     Route::post('/karyawan/absen', [AttendanceController::class, 'store'])->name('absen.store');
@@ -46,6 +46,7 @@ Route::post('/logout', function () {
     Auth::logout();
     return redirect('/login'); // Redirect langsung ke halaman login
 })->name('logout');
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 
 // Include route authentication dari Laravel Breeze
 require __DIR__.'/auth.php';

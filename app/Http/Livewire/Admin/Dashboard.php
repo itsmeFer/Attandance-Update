@@ -11,12 +11,12 @@ class Dashboard extends Component
 
     public function mount()
     {
+        // Ambil data absensi untuk admin
         $this->attendances = Attendance::with('user')->get();
     }
 
     public function render()
     {
-        return view('livewire.admin.dashboard')
-            ->layout('layouts.app'); // Gunakan layout dari Jetstream
+        return view('livewire.admin.dashboard');
     }
 }

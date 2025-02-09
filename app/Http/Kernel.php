@@ -59,8 +59,9 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         
         // Tambahkan middleware 'role' untuk pemeriksaan role
-        'role' => \App\Http\Middleware\RoleMiddleware::class,
-    ];
+        'role' => \App\Http\Middleware\RoleMiddleware::class, // Pastikan ada middleware ini
+        'admin' => \App\Http\Middleware\RedirectIfNotAdmin::class,
+    ];  
     /**
      * The application's middleware aliases.
      *
