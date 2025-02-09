@@ -47,6 +47,7 @@ Route::post('/logout', function () {
     return redirect('/login'); // Redirect langsung ke halaman login
 })->name('logout');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
 
 // Include route authentication dari Laravel Breeze
 require __DIR__.'/auth.php';
