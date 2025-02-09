@@ -3,20 +3,24 @@
 namespace App\Http\Livewire\Admin;
 
 use Livewire\Component;
+use App\Models\User;
 use App\Models\Attendance;
 
 class Dashboard extends Component
 {
-    public $attendances;
+    public $totalKaryawan, $hadirHariIni, $belumAbsen;
 
     public function mount()
     {
-        // Ambil data absensi untuk admin
-        $this->attendances = Attendance::with('user')->get();
+        $this->totalKaryawan = User::where('role', 'karyawan')->count();
+        $this->hadirHariIni = Attendance::whereDate('check_in', today())->count();
+        $this->belumAbsen = $this->totalKaryawan - $this->hadirHariIni;
     }
 
     public function render()
     {
-        return view('livewire.admin.dashboard');
+        return view('livewire.admin.dashboard', [
+            'attendances' => Attendance::with('user')->get(),
+        ]);
     }
 }

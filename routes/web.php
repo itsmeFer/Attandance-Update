@@ -20,11 +20,17 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('karyawan.dashboard');
     })->name('dashboard');
 });
+use App\Http\Livewire\Admin\Dashboard;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/admin/dashboard', Dashboard::class)->name('admin.dashboard');
+});
 
 // Route untuk admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
     // Mengarahkan ke Livewire Admin Dashboard
     Route::get('/admin/dashboard', \App\Http\Livewire\Admin\Dashboard::class)->name('admin.dashboard');
+    
 });
 
 // Route untuk karyawan
@@ -48,6 +54,8 @@ Route::post('/logout', function () {
 })->name('logout');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+
+Route::get('/admin/dashboard', [AttendanceController::class, 'index'])->middleware('auth');
 
 // Include route authentication dari Laravel Breeze
 require __DIR__.'/auth.php';

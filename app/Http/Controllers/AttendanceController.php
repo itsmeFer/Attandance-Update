@@ -8,6 +8,19 @@ use Illuminate\Support\Facades\Auth;
 
 class AttendanceController extends Controller
 {   
+
+    public function index()
+{
+    $totalKaryawan = \App\Models\User::count(); // Total karyawan
+    $hadirHariIni = Attendance::whereDate('check_in', now()->toDateString())->count(); // Karyawan yang sudah absen
+    $belumAbsen = $totalKaryawan - $hadirHariIni; // Karyawan yang belum absen
+    $attendances = Attendance::with('user')->latest()->get(); // Data absensi
+
+    return view('livewire.admin.dashboard', compact('totalKaryawan', 'hadirHariIni', 'belumAbsen', 'attendances'));
+}
+
+
+
     public function show()
 {
     $user = Auth::user();
