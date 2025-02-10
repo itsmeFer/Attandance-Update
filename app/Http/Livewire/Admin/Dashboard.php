@@ -5,25 +5,31 @@ namespace App\Http\Livewire\Admin;
 use Livewire\Component;
 use App\Models\User;
 use App\Models\Attendance;
+use Carbon\Carbon;
 
 class Dashboard extends Component
 {
-    public $totalKaryawan, $hadirHariIni, $belumAbsen, $lateEmployees;
-    public function mount()
-    {
-        $this->totalKaryawan = User::where('role', 'karyawan')->count();
-        $this->hadirHariIni = Attendance::whereDate('check_in', today())->count();
-        $this->belumAbsen = $this->totalKaryawan - $this->hadirHariIni;
-    
-        $jamTerlambat = '09:00:00'; // Misalnya terlambat jika absen setelah 09:00
-        $this->lateEmployees = Attendance::whereDate('check_in', today())
-            ->whereTime('check_in', '>', $jamTerlambat)
-            ->count();
-    }
     public function render()
     {
+        $today = Carbon::today();
+        
+        $totalKaryawan = User::where('role', 'karyawan')->count();
+        $hadirHariIni = Attendance::whereDate('check_in', $today)->count();
+        $belumAbsen = $totalKaryawan - $hadirHariIni;
+        $lateEmployees = Attendance::whereDate('check_in', $today)
+            ->whereTime('check_in', '>', '08:30:00')
+            ->count();
+
+        $attendances = Attendance::with('user')
+            ->whereDate('check_in', $today)
+            ->get();
+
         return view('livewire.admin.dashboard', [
-            'attendances' => Attendance::with('user')->latest()->get(),
+            'totalKaryawan' => $totalKaryawan,
+            'hadirHariIni' => $hadirHariIni,
+            'belumAbsen' => $belumAbsen,
+            'lateEmployees' => $lateEmployees,
+            'attendances' => $attendances
         ]);
     }
 }

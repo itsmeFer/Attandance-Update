@@ -29,6 +29,9 @@ Route::middleware(['auth', 'role:karyawan'])->group(function () {
     Route::get('/karyawan/absen', [AttendanceController::class, 'show'])->name('absen.show');
     Route::post('/karyawan/absen', [AttendanceController::class, 'store'])->name('absen.store');
 });
+Route::middleware(['auth'])->group(function () {
+    Route::get('/karyawan/dashboard', [KaryawanController::class, 'dashboard'])->name('karyawan.dashboard');
+});
 
 // Route untuk profile user
 Route::middleware('auth')->group(function () {
@@ -36,6 +39,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+Route::get('/karyawan/dashboard', function () {
+    return view('karyawan.dashboard');
+})->name('karyawan.dashboard');
 
 // Route logout
 Route::post('/logout', function () {
