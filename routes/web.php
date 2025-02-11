@@ -23,6 +23,10 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', Dashboard::class)->name('admin.dashboard');
 });
+Route::group([], function () {
+    Route::get('/absen', [AttendanceController::class, 'show'])->name('attendance.show');
+    Route::post('/absen', [AttendanceController::class, 'store'])->name('attendance.store');
+});
 
 // Route untuk Karyawan
 Route::middleware(['auth', 'role:karyawan'])->group(function () {

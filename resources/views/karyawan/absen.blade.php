@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Absen Karyawan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #video {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: block;
+        }
+        #canvas {
+            display: none;
+        }
+        #photo-preview {
+            width: 100%;
+            max-width: 500px;
+            margin: 10px auto;
+            display: none;
+        }
+    </style>
 </head>
 <body class="bg-light">
 
@@ -16,15 +33,17 @@
             @php
                 $user = Auth::user();
                 $today = now()->toDateString();
-                $currentTime = now()->format('H:i'); // Format waktu sekarang (24 jam)
+                $currentTime = now()->format('H:i');
                 $attendance = \App\Models\Attendance::where('user_id', $user->id)
                     ->whereDate('check_in', $today)
                     ->first();
             @endphp
+
             <form action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit" class="btn btn-secondary">🚪 Logout</button>
-        </form>
+                @csrf
+                <button type="submit" class="btn btn-secondary">🚪 Logout</button>
+            </form>
+
             <div class="alert alert-secondary text-center">
                 ⏰ Waktu sekarang: <span id="current-time" class="fw-bold">{{ $currentTime }}</span>
             </div>
@@ -41,15 +60,23 @@
 
                         <div class="mb-3">
                             <label class="form-label">📷 Foto Masuk:</label>
-                            <input type="file" name="photo" accept="image/*" class="form-control" required>
+                            <div class="text-center mb-2">
+                                <video id="video" autoplay playsinline></video>
+                                <canvas id="canvas"></canvas>
+                                <img id="photo-preview" class="img-fluid rounded">
+                            </div>
+                            <input type="hidden" name="photo" id="photo-input">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-secondary" id="startCamera">🎥 Buka Kamera</button>
+                                <button type="button" class="btn btn-info" id="capturePhoto" disabled>📸 Ambil Foto</button>
+                            </div>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100">✅ Absen Masuk</button>
                     </form>
                 @else
                     <div class="alert alert-danger text-center">
-                        ⚠️ Absen masuk sudah ditutup!<br>
-                        <small class="text-muted">Batas absen masuk: <b>08:30 pagi</b></small>
+                        ⚠️ Absen masuk sudah ditutup!
                     </div>
                 @endif
             @elseif ($attendance && !$attendance->check_out)
@@ -64,33 +91,88 @@
 
                         <div class="mb-3">
                             <label class="form-label">📷 Foto Keluar:</label>
-                            <input type="file" name="photo" accept="image/*" class="form-control" required>
+                            <div class="text-center mb-2">
+                                <video id="video" autoplay playsinline></video>
+                                <canvas id="canvas"></canvas>
+                                <img id="photo-preview" class="img-fluid rounded">
+                            </div>
+                            <input type="hidden" name="photo" id="photo-input">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-secondary" id="startCamera">🎥 Buka Kamera</button>
+                                <button type="button" class="btn btn-info" id="capturePhoto" disabled>📸 Ambil Foto</button>
+                            </div>
                         </div>
 
                         <button type="submit" class="btn btn-danger w-100">❌ Absen Keluar</button>
                     </form>
                 @else
                     <div class="alert alert-warning text-center">
-                        ⚠️ Absen keluar hanya bisa dilakukan antara jam <b>17:00 hingga 00:00</b>!<br>
-                        <small class="text-muted">Silakan kembali nanti.</small>
+                        ⚠️ Absen keluar hanya bisa dilakukan antara jam <b>17:00 hingga 00:00</b>!
                     </div>
                 @endif
             @else
                 <div class="alert alert-success text-center">
-                    ✅ Anda sudah menyelesaikan absen masuk dan keluar.<br>
-                    <small class="text-muted">Silakan absen besok lagi. ⏳</small>
+                    ✅ Anda sudah menyelesaikan absen masuk dan keluar.
                 </div>
-                <div class="text-center mt-3">
-                
-    </div>
-    
-</div>
             @endif
         </div>
     </div>
 </div>
 
 <script>
+    let stream = null;
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const photoPreview = document.getElementById('photo-preview');
+    const photoInput = document.getElementById('photo-input');
+    const startButton = document.getElementById('startCamera');
+    const captureButton = document.getElementById('capturePhoto');
+
+    // Fungsi untuk memulai kamera
+    async function startCamera() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'environment' // Menggunakan kamera belakang jika ada
+                } 
+            });
+            video.srcObject = stream;
+            video.style.display = 'block';
+            photoPreview.style.display = 'none';
+            startButton.textContent = '🔄 Ganti Kamera';
+            captureButton.disabled = false;
+        } catch (err) {
+            alert('Error: ' + err.message);
+            console.error('Error:', err);
+        }
+    }
+
+    // Fungsi untuk mengambil foto
+    function capturePhoto() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        
+        // Konversi canvas ke base64
+        const photoData = canvas.toDataURL('image/jpeg');
+        photoInput.value = photoData;
+        
+        // Tampilkan preview
+        photoPreview.src = photoData;
+        photoPreview.style.display = 'block';
+        video.style.display = 'none';
+        
+        // Hentikan kamera
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        
+        startButton.textContent = '🎥 Buka Kamera';
+        captureButton.disabled = true;
+    }
+
+    // Fungsi untuk mendapatkan lokasi
     function getLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -102,7 +184,7 @@
                     let longitude = position.coords.longitude;
 
                     locationInput.value = latitude + ", " + longitude;
-                    locationInput.disabled = false; // Aktifkan agar bisa dikirim ke backend
+                    locationInput.disabled = false;
                     coordinateText.innerHTML = `📍 Koordinat: <b>${latitude}, ${longitude}</b>`;
                 },
                 function (error) {
@@ -118,7 +200,7 @@
     }
 
     function enableLocationInput() {
-        document.getElementById("location").disabled = false; // Aktifkan sebelum submit
+        document.getElementById("location").disabled = false;
     }
 
     function updateTime() {
@@ -130,11 +212,17 @@
         document.getElementById("current-time").innerText = currentTime;
     }
 
-    // Panggil fungsi saat halaman dimuat
+    // Event listeners
+    if (startButton && captureButton) {
+        startButton.addEventListener('click', startCamera);
+        captureButton.addEventListener('click', capturePhoto);
+    }
+
+    // Inisialisasi
     window.onload = function() {
         getLocation();
         updateTime();
-        setInterval(updateTime, 60000); // Update setiap 1 menit
+        setInterval(updateTime, 60000);
     };
 </script>
 

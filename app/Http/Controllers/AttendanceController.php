@@ -1,54 +1,60 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AttendanceController extends Controller
-{   
-
+{  
     public function index()
-{
-    $totalKaryawan = \App\Models\User::count(); // Total karyawan
-    $hadirHariIni = Attendance::whereDate('check_in', now()->toDateString())->count(); // Karyawan yang sudah absen
-    $belumAbsen = $totalKaryawan - $hadirHariIni; // Karyawan yang belum absen
-    $attendances = Attendance::with('user')->latest()->get(); // Data absensi
-
-    return view('livewire.admin.dashboard', compact('totalKaryawan', 'hadirHariIni', 'belumAbsen', 'attendances'));
-}
-
-
+    {
+        $totalKaryawan = \App\Models\User::count();
+        $hadirHariIni = Attendance::whereDate('check_in', now()->toDateString())->count();
+        $belumAbsen = $totalKaryawan - $hadirHariIni;
+        $attendances = Attendance::with('user')->latest()->get();
+        return view('livewire.admin.dashboard', compact('totalKaryawan', 'hadirHariIni', 'belumAbsen', 'attendances'));
+    }
 
     public function show()
-{
-    $user = Auth::user();
-    $today = now()->toDateString();
-
-    $attendance = Attendance::where('user_id', $user->id)
-        ->whereDate('check_in', $today)
-        ->first();
-
-    return view('karyawan.absen', compact('attendance'));
-}
+    {
+        $user = Auth::user();
+        $today = now()->toDateString();
+        $attendance = Attendance::where('user_id', $user->id)
+            ->whereDate('check_in', $today)
+            ->first();
+        return view('karyawan.absen', compact('attendance'));
+    }
 
     public function store(Request $request)
     {
         $request->validate([
             'location' => 'required|string',
-            'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'photo' => 'required|string', // Ubah validasi untuk menerima base64
         ]);
+
+        // Proses decode base64 image
+        $image_parts = explode(";base64,", $request->photo);
+        if (count($image_parts) < 2) {
+            return back()->with('error', 'Format foto tidak valid');
+        }
+
+        $image_base64 = base64_decode($image_parts[1]);
+        $fileName = 'absensi_' . time() . '_' . Str::random(10) . '.jpg';
+        $path = 'absensi/' . $fileName;
+
+        // Simpan file ke storage
+        Storage::disk('public')->put($path, $image_base64);
 
         $user = Auth::user();
         $today = now()->toDateString();
-
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('check_in', $today)
             ->first();
 
         if (!$attendance) {
-            $path = $request->file('photo')->store('absensi', 'public');
+            // Absen masuk
             Attendance::create([
                 'user_id' => $user->id,
                 'check_in' => now(),
@@ -57,7 +63,7 @@ class AttendanceController extends Controller
             ]);
             return back()->with('success', 'Berhasil absen masuk!');
         } elseif (!$attendance->check_out) {
-            $path = $request->file('photo')->store('absensi', 'public');
+            // Absen keluar
             $attendance->update([
                 'check_out' => now(),
                 'check_out_location' => $request->location,
