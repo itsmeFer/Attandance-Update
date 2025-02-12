@@ -2,20 +2,35 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AttendanceController extends Controller
 {  
-    public function index()
-    {
-        $totalKaryawan = \App\Models\User::count();
-        $hadirHariIni = Attendance::whereDate('check_in', now()->toDateString())->count();
-        $belumAbsen = $totalKaryawan - $hadirHariIni;
-        $attendances = Attendance::with('user')->latest()->get();
-        return view('livewire.admin.dashboard', compact('totalKaryawan', 'hadirHariIni', 'belumAbsen', 'attendances'));
-    }
+public function index(Request $request)
+{
+    $search = $request->input('search');
+
+    $karyawan = User::where('role', 'karyawan')->get();
+    $totalKaryawan = $karyawan->count();
+    $hadirHariIni = Attendance::whereDate('check_in', now()->toDateString())->count();
+    $belumAbsen = $totalKaryawan - $hadirHariIni;
+
+    // Pencarian berdasarkan nama karyawan
+    $attendances = Attendance::with('user')
+        ->when($search, function ($query) use ($search) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
+        })
+        ->latest()
+        ->get();
+
+    return view('livewire.admin.dashboard', compact('totalKaryawan', 'hadirHariIni', 'belumAbsen', 'attendances', 'search'));
+}
+
 
     public function show()
     {
@@ -38,13 +53,22 @@ class AttendanceController extends Controller
     
         // Ambil tahun yang dipilih dari request atau gunakan tahun saat ini
         $selectedYear = $request->input('year', now()->year);
+        
+        // Ambil nama karyawan jika ada
+        $employeeName = $request->input('employee_name');
     
-        // Ambil data absensi berdasarkan tahun yang dipilih
-        $attendances = Attendance::whereYear('check_in', $selectedYear)->get();
+        // Query data absensi berdasarkan tahun yang dipilih dan nama karyawan
+        $attendances = Attendance::whereYear('check_in', $selectedYear)
+            ->when($employeeName, function ($query) use ($employeeName) {
+                $query->whereHas('user', function ($q) use ($employeeName) {
+                    $q->where('name', 'like', '%' . $employeeName . '%');
+                });
+            })
+            ->get();
     
-        // Kirim data ke view
-        return view('admin.monthly-report', compact('years', 'selectedYear', 'attendances'));
+        return view('admin.monthly-report', compact('years', 'selectedYear', 'attendances', 'employeeName'));
     }
+    
     
 
     public function store(Request $request)

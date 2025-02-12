@@ -50,8 +50,8 @@
 
             @if (!$attendance)
                 @if ($currentTime <= '18.00')
-                    <form action="{{ route('absen.store') }}" method="POST" enctype="multipart/form-data" class="needs-validation" onsubmit="enableLocationInput()" novalidate>
-                        @csrf
+                <form action="{{ route('absen.store') }}" method="POST" enctype="multipart/form-data" class="needs-validation" onsubmit="enableLocationInput(event)" novalidate>
+                @csrf
                         <div class="mb-3">
                             <label class="form-label">📍 Lokasi Masuk:</label>
                             <input type="text" id="location" name="location" class="form-control" readonly required>
@@ -81,8 +81,8 @@
                 @endif
             @elseif ($attendance && !$attendance->check_out)
                 @if ($currentTime >= '17:00' || $currentTime <= '23:59')
-                    <form action="{{ route('absen.store') }}" method="POST" enctype="multipart/form-data" class="needs-validation" onsubmit="enableLocationInput()" novalidate>
-                        @csrf
+                <form action="{{ route('absen.store') }}" method="POST" enctype="multipart/form-data" class="needs-validation" onsubmit="enableLocationInput(event)" novalidate>
+                @csrf
                         <div class="mb-3">
                             <label class="form-label">📍 Lokasi Keluar:</label>
                             <input type="text" id="location" name="location" class="form-control" readonly required>
@@ -174,30 +174,41 @@
 
     // Fungsi untuk mendapatkan lokasi
     function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function (position) {
-                    let locationInput = document.getElementById("location");
-                    let coordinateText = document.getElementById("coordinate");
+    let locationInput = document.getElementById("location");
+    let coordinateText = document.getElementById("coordinate");
 
-                    let latitude = position.coords.latitude;
-                    let longitude = position.coords.longitude;
-
-                    locationInput.value = latitude + ", " + longitude;
-                    locationInput.disabled = false;
-                    coordinateText.innerHTML = `📍 Koordinat: <b>${latitude}, ${longitude}</b>`;
-                },
-                function (error) {
-                    console.error("Error mendapatkan lokasi:", error);
-                    document.getElementById("location").value = "Tidak dapat mengambil lokasi";
-                    document.getElementById("coordinate").innerText = "⚠️ Gagal mendapatkan lokasi.";
-                }
-            );
-        } else {
-            document.getElementById("location").value = "Geolocation tidak didukung";
-            document.getElementById("coordinate").innerText = "⚠️ Geolocation tidak didukung oleh perangkat ini.";
-        }
+    if (navigator.geolocation) {
+        coordinateText.innerText = "🔄 Mengambil lokasi...";
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                let latitude = position.coords.latitude;
+                let longitude = position.coords.longitude;
+                locationInput.value = latitude + ", " + longitude;
+                coordinateText.innerHTML = `📍 Koordinat: <b>${latitude}, ${longitude}</b>`;
+            },
+            function (error) {
+                console.error("Error mendapatkan lokasi:", error);
+                locationInput.value = "Tidak dapat mengambil lokasi";
+                coordinateText.innerText = "⚠️ Gagal mendapatkan lokasi.";
+            }
+        );
+    } else {
+        locationInput.value = "Geolocation tidak didukung";
+        coordinateText.innerText = "⚠️ Geolocation tidak didukung oleh perangkat ini.";
     }
+}
+
+
+function enableLocationInput(event) {
+    let locationInput = document.getElementById("location");
+    
+    if (!locationInput.value || locationInput.value.includes("Mengambil lokasi") || locationInput.value.includes("Tidak dapat mengambil lokasi")) {
+        alert("⚠️ Mohon Tunggu, Lokasi sedang diambil!");
+        event.preventDefault(); // Mencegah form submit
+    }
+}
+
+
 
     function enableLocationInput() {
         document.getElementById("location").disabled = false;

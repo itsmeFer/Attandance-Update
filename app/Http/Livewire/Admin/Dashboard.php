@@ -15,7 +15,7 @@ class Dashboard extends Component
 
     public function mount()
     {
-        $this->totalKaryawan = User::count();
+        $this->totalKaryawan = User::where('role', 'karyawan')->count();
         $this->hadirHariIni = Attendance::whereDate('check_in', today())->count();
         $this->belumAbsen = $this->totalKaryawan - $this->hadirHariIni;
         $this->attendances = Attendance::with('user')->latest()->get();

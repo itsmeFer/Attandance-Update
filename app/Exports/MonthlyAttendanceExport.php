@@ -13,10 +13,29 @@ class MonthlyAttendanceExport implements FromCollection, WithHeadings, WithMappi
 {
     protected $month;
 
-    public function __construct($month)
-    {
-        $this->month = $month;
-    }
+    public function __construct($request)
+{
+    $this->request = $request;
+}
+
+public function query()
+{
+    return Attendance::with('user')
+        ->whereYear('check_in', $this->request->input('year', now()->year))
+        ->when($this->request->input('employee_name'), function ($query) {
+            $query->whereHas('user', function ($q) {
+                $q->where('name', 'like', '%' . $this->request->input('employee_name') . '%');
+            });
+        })
+        ->when($this->request->input('status'), function ($query) {
+            if ($this->request->input('status') === 'hadir') {
+                $query->whereNotNull('check_in');
+            } elseif ($this->request->input('status') === 'tidak_hadir') {
+                $query->whereNull('check_in');
+            }
+        });
+}
+
 
     public function collection()
     {

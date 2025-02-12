@@ -13,25 +13,63 @@
             }
         }
     </script>
+    <!-- JavaScript Pencarian -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let searchInput = document.getElementById("searchInput");
+
+        searchInput.addEventListener("keyup", function () {
+            let filter = this.value.toLowerCase();
+            let rows = document.querySelectorAll("#attendanceTable tbody tr:not(.no-data)");
+
+            rows.forEach(row => {
+                let nameCell = row.cells[1]; // Kolom Nama
+                let dateCell = row.cells[2]; // Kolom Tanggal
+
+                if (nameCell && dateCell) {
+                    let nameText = nameCell.textContent.toLowerCase();
+                    let dateText = dateCell.textContent.toLowerCase();
+
+                    // Cek apakah input cocok dengan nama atau tanggal
+                    if (nameText.includes(filter) || dateText.includes(filter)) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+                    }
+                }
+            });
+        });
+
+        document.getElementById("clearSearch").addEventListener("click", function () {
+            searchInput.value = "";
+            document.querySelectorAll("#attendanceTable tbody tr").forEach(row => {
+                row.style.display = "";
+            });
+        });
+    });
+</script>
+
 </head>
 <body class="bg-gray-100" onload="checkData()">
 
 <!-- Navbar -->
-<nav class="bg-blue-600 p-4 shadow-md">
-    <div class="container mx-auto flex justify-between items-center">
-        <a href="#" class="text-white text-lg font-bold">📊 Admin Dashboard</a>
-        <div class="space-x-4">
-            <a href="{{ route('admin.dashboard') }}" class="text-white hover:underline">Dashboard</a>
-            <a href="{{ route('admin.monthly.report') }}" class="text-white font-semibold">Laporan Bulanan</a>
-        </div>
-        <form action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit" class="bg-red-500 px-4 py-2 text-white rounded-lg shadow hover:bg-red-600">
-                Logout
-            </button>
-        </form>
+<nav class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+    <div class="text-xl font-bold text-gray-800">
+    📊 Admin Panel
     </div>
+    <div class="space-x-4">
+        <a href="{{ route('admin.dashboard') }}" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
+        <a href="{{ route('admin.monthly.report') }}" class="text-gray-700 hover:text-blue-600 font-medium">Laporan Bulanan</a>
+    </div>
+    <form action="{{ route('logout') }}" method="POST">
+        @csrf
+        <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-700 transition">
+            Logout
+        </button>
+    </form>
 </nav>
+
+
 
 <!-- Container -->
 <div class="container mx-auto mt-8 p-6 bg-white shadow-lg rounded-lg">
@@ -52,7 +90,11 @@
     </button>
 </form>
 
-
+<!-- Input Pencarian -->
+<div class="mb-4 flex items-center space-x-2">
+    <input type="text" id="searchInput" placeholder="Cari nama atau tanggal..." class="border rounded px-3 py-1 w-1/3">
+    <button onclick="clearSearch()" class="bg-gray-400 text-white px-3 py-1 rounded">Clear</button>
+</div>
 
     <!-- Tombol Export -->
     <div class="mb-4 flex space-x-4">
@@ -61,7 +103,7 @@
             Export PDF
         </a>
         <a href="{{ route('admin.monthly-report.excel', ['year' => request('year')]) }}" 
-           class="bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600">
+        class="bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600">
             Export Excel
         </a>
     </div>

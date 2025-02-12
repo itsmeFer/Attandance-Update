@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\MonthlyAttendanceExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
@@ -11,23 +12,43 @@ use App\Exports\MonthlyReportExport;
 
 class MonthlyReportController extends Controller
 {
+
     public function index()
     {
         $attendances = Attendance::with('user')->latest()->get();
         return view('admin.monthly-report', compact('attendances'));
     }
 
-    public function exportPDF()
+    public function exportPDF(Request $request)
     {
-        $attendances = Attendance::with('user')->whereMonth('check_in', now()->month)->get();
-        
+        $selectedYear = $request->input('year', now()->year);
+        $employeeName = $request->input('employee_name');
+        $status = $request->input('status');
+    
+        $attendances = Attendance::with('user')
+            ->whereYear('check_in', $selectedYear)
+            ->when($employeeName, function ($query) use ($employeeName) {
+                $query->whereHas('user', function ($q) use ($employeeName) {
+                    $q->where('name', 'like', '%' . $employeeName . '%');
+                });
+            })
+            ->when($status, function ($query) use ($status) {
+                if ($status === 'hadir') {
+                    $query->whereNotNull('check_in');
+                } elseif ($status === 'tidak_hadir') {
+                    $query->whereNull('check_in');
+                }
+            })
+            ->get();
+    
         $pdf = Pdf::loadView('reports.monthly_pdf', compact('attendances'));
-
         return $pdf->download('Laporan_Bulanan_Absensi.pdf');
     }
+    
 
-    public function exportExcel()
-    {
-        return Excel::download(new MonthlyAttendanceExport, 'Laporan_Bulanan_Absensi.xlsx');
-    }
+    public function exportExcel(Request $request)
+{
+    return Excel::download(new MonthlyAttendanceExport($request), 'Laporan_Bulanan_Absensi.xlsx');
+}
+
 }
