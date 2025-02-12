@@ -8,13 +8,15 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        if (auth()->check() && in_array(auth()->user()->role, $roles)) {
+        if (!auth()->check()) {
+            return redirect('/login');
+        }
+
+        if (in_array(auth()->user()->role, $roles)) {
             return $next($request);
         }
 
-        // Redirect sesuai role pengguna
-        return auth()->user()->role === 'admin'
-            ? redirect('/admin/dashboard')
-            : redirect('/dashboard');
+        // Redirect hanya jika user tidak memiliki role yang sesuai
+        return redirect()->route(auth()->user()->role === 'admin' ? 'admin.dashboard' : 'karyawan.dashboard');
     }
 }

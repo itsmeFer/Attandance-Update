@@ -49,7 +49,7 @@
             </div>
 
             @if (!$attendance)
-                @if ($currentTime <= '23:30')
+                @if ($currentTime <= '18.00')
                     <form action="{{ route('absen.store') }}" method="POST" enctype="multipart/form-data" class="needs-validation" onsubmit="enableLocationInput()" novalidate>
                         @csrf
                         <div class="mb-3">

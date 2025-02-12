@@ -27,6 +27,26 @@ class AttendanceController extends Controller
         return view('karyawan.absen', compact('attendance'));
     }
 
+    public function monthlyReport(Request $request)
+    {
+        // Ambil daftar tahun dari tabel attendance berdasarkan check_in
+        $years = Attendance::whereNotNull('check_in')
+            ->selectRaw('YEAR(check_in) as year')
+            ->groupBy('year')
+            ->orderByDesc('year')
+            ->pluck('year');
+    
+        // Ambil tahun yang dipilih dari request atau gunakan tahun saat ini
+        $selectedYear = $request->input('year', now()->year);
+    
+        // Ambil data absensi berdasarkan tahun yang dipilih
+        $attendances = Attendance::whereYear('check_in', $selectedYear)->get();
+    
+        // Kirim data ke view
+        return view('admin.monthly-report', compact('years', 'selectedYear', 'attendances'));
+    }
+    
+
     public function store(Request $request)
     {
         $request->validate([

@@ -19,6 +19,11 @@ class Attendance extends Model
         'check_out_photo',
     ];
 
+    protected $casts = [
+        'check_in' => 'datetime',
+        'check_out' => 'datetime',
+    ];
+    
     public function user()
     {
         return $this->belongsTo(User::class);
