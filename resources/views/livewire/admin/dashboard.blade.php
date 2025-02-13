@@ -10,9 +10,11 @@
         <span class="text-xl font-bold text-gray-800">📊 Admin Panel</span>
     </div>
     <div class="space-x-4">
-        <a href="{{ route('admin.dashboard') }}" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
-        <a href="{{ route('admin.monthly.report') }}" class="text-gray-700 hover:text-blue-600 font-medium">Laporan Bulanan</a>
+    <a href="{{ route('admin.dashboard') }}" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
+    <a href="{{ route('admin.monthly-report') }}" class="text-gray-700 hover:text-blue-600 font-medium">Laporan Bulanan</a>
+    <a href="{{ route('admin.izin.index') }}">Lihat Izin</a>
     </div>
+
     <form action="{{ route('logout') }}" method="POST" class="ml-4">
         @csrf
         <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-700 transition">

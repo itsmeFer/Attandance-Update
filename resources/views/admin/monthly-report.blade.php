@@ -55,12 +55,14 @@
 <!-- Navbar -->
 <nav class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
     <div class="text-xl font-bold text-gray-800">
-    📊 Admin Panel
+    📝 Admin Panel - Laporan Bulanan Absensi
     </div>
     <div class="space-x-4">
         <a href="{{ route('admin.dashboard') }}" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
-        <a href="{{ route('admin.monthly.report') }}" class="text-gray-700 hover:text-blue-600 font-medium">Laporan Bulanan</a>
-    </div>
+        <a href="{{ route('admin.monthly-report') }}" class="text-gray-700 hover:text-blue-600 font-medium">Laporan Bulanan</a>
+        <a href="{{ route('admin.izin.index') }}">Lihat Izin</a>
+
+        </div>
     <form action="{{ route('logout') }}" method="POST">
         @csrf
         <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-700 transition">
@@ -76,7 +78,7 @@
     <h2 class="text-2xl font-semibold mb-4">📅 Laporan Bulanan Absensi</h2>
 
     <!-- Filter Tahun -->
-    <form method="GET" action="{{ route('admin.monthly.report') }}" class="mb-4 flex items-center space-x-4">
+    <form method="GET" action="{{ route('admin.monthly-report') }}" class="mb-4 flex items-center space-x-4">
     <label for="year" class="text-gray-700 font-medium">Pilih Tahun:</label>
     <select name="year" class="border rounded px-3 py-1">
         @forelse($years as $year)
@@ -93,7 +95,8 @@
 <!-- Input Pencarian -->
 <div class="mb-4 flex items-center space-x-2">
     <input type="text" id="searchInput" placeholder="Cari nama atau tanggal..." class="border rounded px-3 py-1 w-1/3">
-    <button onclick="clearSearch()" class="bg-gray-400 text-white px-3 py-1 rounded">Clear</button>
+    <button id="clearSearch" class="bg-gray-400 text-white px-3 py-1 rounded">Clear</button>
+
 </div>
 
     <!-- Tombol Export -->

@@ -116,6 +116,10 @@
                 </div>
             @endif
         </div>
+        <div class="text-center mt-3">
+        <a href="{{ route('karyawan.izin.create') }}" class="btn btn-warning">📝 Ajukan Izin Tambah Kehadiran</a>
+        </div>
+
     </div>
 </div>
 

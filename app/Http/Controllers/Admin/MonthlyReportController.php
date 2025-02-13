@@ -15,9 +15,17 @@ class MonthlyReportController extends Controller
 
     public function index()
     {
+        // Ambil daftar tahun unik dari tabel attendance
+        $years = Attendance::selectRaw('YEAR(check_in) as year')
+            ->groupBy('year')
+            ->orderByDesc('year')
+            ->pluck('year');
+    
         $attendances = Attendance::with('user')->latest()->get();
-        return view('admin.monthly-report', compact('attendances'));
+    
+        return view('admin.monthly-report', compact('attendances', 'years'));
     }
+    
 
     public function exportPDF(Request $request)
     {
