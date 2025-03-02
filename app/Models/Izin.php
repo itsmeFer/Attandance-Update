@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Izin; // Pastikan ini benar
+
 class Izin extends Model
 {
     use HasFactory;
@@ -17,6 +18,10 @@ class Izin extends Model
         'dokumen',
         'izin_dari',
         'izin_sampai',
+        'status',
+        'disetujui_oleh_id', 
+        'disetujui_oleh',
+
     ];
 
     // Relasi ke tabel users

@@ -58,6 +58,7 @@ Route::middleware(['auth', 'role:karyawan'])->prefix('karyawan')->name('karyawan
     Route::post('/izin', [IzinController::class, 'store'])->name('izin.store');
 });
 Route::post('/absen', [AttendanceController::class, 'store'])->name('absen.store');
+Route::get('/absen', [AttendanceController::class, 'show'])->name('absen.show');
 
 
 // Route untuk Profile User
@@ -72,12 +73,16 @@ Route::get('/karyawan/izin', [IzinController::class, 'izin'])->name('karyawan.iz
 Route::get('/karyawan/izin/create', [IzinController::class, 'create'])->name('izin.create');
 Route::get('/karyawan/izin', [IzinController::class, 'izin'])->name('karyawan.izin');
 Route::post('/karyawan/izin/store', [IzinController::class, 'store'])->name('izin.store');
+Route::patch('/admin/izin/{id}/update', [IzinController::class, 'update'])->name('admin.izin.update');
 
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/karyawan/izin', [IzinController::class, 'create'])->name('karyawan.izin.create');
     Route::post('/karyawan/izin', [IzinController::class, 'store'])->name('izin.store');
 });
+Route::post('/admin/izin/{id}/approve', [AdminIzinController::class, 'approve'])->name('admin.izin.approve');
+Route::post('/admin/izin/{id}/reject', [AdminIzinController::class, 'reject'])->name('admin.izin.reject');
+Route::patch('/admin/izin/{id}', [IzinController::class, 'update'])->name('admin.izin.update');
 
 // Route logout
 Route::post('/logout', function () {

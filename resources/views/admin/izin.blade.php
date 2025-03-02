@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -42,36 +40,81 @@
     <!-- Tabel -->
     <div class="overflow-x-auto">
         <table id="attendanceTable" class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-            <thead class="bg-gray-200 text-black">
-                <tr>
-                    <th class="py-2 px-4 border-b">ID</th>
-                    <th class="py-2 px-4 border-b">User ID</th>
-                    <th class="py-2 px-4 border">Nama</th>
-                    <th class="py-2 px-4 border-b">Alasan</th>
-                    <th class="py-2 px-4 border-b">Dokumen</th>
-                    <th class="py-2 px-4 border-b">Izin Dari</th>
-                    <th class="py-2 px-4 border-b">Izin Sampai</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($izin as $data)
-                    <tr class="hover:bg-gray-100">
-                        <td class="py-2 px-4 border-b text-center">{{ $data->id }}</td>
-                        <td class="py-2 px-4 border-b text-center">{{ $data->user_id }}</td>
-                        <td class="border border-gray-300 px-4 py-2">{{ $data->user->name }}</td>
-                        <td class="py-2 px-4 border-b">{{ $data->alasan }}</td>
-                        <td class="py-2 px-4 border-b text-center">
-                            <a href="{{ Storage::url($data->dokumen) }}" target="_blank">Lihat Dokumen</a>
-                        </td>
-                        <td class="py-2 px-4 border-b text-center">{{ $data->izin_dari }}</td>
-                        <td class="py-2 px-4 border-b text-center">{{ $data->izin_sampai }}</td>
-                    </tr>
-                @empty
-                    <tr class="no-data">
-                        <td colspan="7" class="text-center py-3">Belum ada pengajuan izin.</td>
-                    </tr>
-                @endforelse
-            </tbody>
+        <thead class="bg-gray-200 text-black">
+    <tr>
+        <th class="py-2 px-4 border-b">ID</th>
+        <th class="py-2 px-4 border-b">User ID</th>
+        <th class="py-2 px-4 border">Nama</th>
+        <th class="py-2 px-4 border-b">Alasan</th>
+        <th class="py-2 px-4 border-b">Dokumen</th>
+        <th class="py-2 px-4 border-b">Izin Dari</th>
+        <th class="py-2 px-4 border-b">Izin Sampai</th>
+        <th class="py-2 px-4 border-b">Status</th>
+        <th class="py-2 px-4 border-b">Disetujui Oleh</th>
+        <th class="py-2 px-4 border-b">ID Admin</th>
+        <th class="py-2 px-4 border-b">Aksi</th>
+    </tr>
+</thead>
+<tbody>
+    @forelse ($izin as $data)
+        <tr class="hover:bg-gray-100">
+            <td class="py-2 px-4 border-b text-center">{{ $data->id }}</td>
+            <td class="py-2 px-4 border-b text-center">{{ $data->user_id }}</td>
+            <td class="border border-gray-300 px-4 py-2">{{ $data->user->name }}</td>
+            <td class="py-2 px-4 border-b">{{ $data->alasan }}</td>
+            <td class="py-2 px-4 border-b text-center">
+                <a href="{{ Storage::url($data->dokumen) }}" target="_blank">Lihat Dokumen</a>
+            </td>
+            <td class="py-2 px-4 border-b text-center">{{ $data->izin_dari }}</td>
+            <td class="py-2 px-4 border-b text-center">{{ $data->izin_sampai }}</td>
+            <td class="py-2 px-4 border-b text-center font-semibold">
+                @if($data->status == 'disetujui')
+                    <span class="text-green-600">Disetujui</span>
+                @elseif($data->status == 'ditolak')
+                    <span class="text-red-600">Ditolak</span>
+                @else
+                    <span class="text-gray-600">Draft</span>
+                @endif
+            </td>
+            <td class="py-2 px-4 border-b text-center">{{ $data->disetujui_oleh ?? '-' }}</td>
+<td class="py-2 px-4 border-b text-center">{{ $data->disetujui_oleh_id ?? '-' }}</td>
+
+
+            <td class="py-2 px-4 border-b text-center">
+                <form method="POST" action="{{ route('admin.izin.update', $data->id) }}">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="status" value="disetujui">
+                    <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
+                        ✅ Setujui
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ route('admin.izin.update', $data->id) }}" class="mt-1">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="status" value="ditolak">
+                    <!-- <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
+                        ❌ Tolak
+                    </button> -->
+                </form>
+
+                <form method="POST" action="{{ route('admin.izin.update', $data->id) }}" class="mt-1">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="status" value="draft">
+                    <button type="submit" class="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">
+                        📝 Draft
+                    </button>
+                </form>
+            </td>
+        </tr>
+    @empty
+        <tr class="no-data">
+            <td colspan="11" class="text-center py-3">Belum ada pengajuan izin.</td>
+        </tr>
+    @endforelse
+</tbody>
         </table>
     </div>
 </div>

@@ -7,6 +7,59 @@ use App\Models\Izin;
 
 class IzinController extends Controller
 {
+    public function update(Request $request, $id)
+    {
+        $izin = Izin::findOrFail($id);
+    
+        if ($request->status == 'disetujui') {
+            $izin->update([
+                'status' => 'disetujui',
+                'disetujui_oleh_id' => auth()->id(),
+                'disetujui_oleh' => auth()->user()->name,
+            ]);
+        } elseif ($request->status == 'ditolak') {
+            $izin->update([
+                'status' => 'ditolak',
+                'disetujui_oleh_id' => auth()->id(),
+                'disetujui_oleh' => auth()->user()->name,
+            ]);
+        } elseif ($request->status == 'draft') {
+            $izin->update([
+                'status' => 'draft',
+                'disetujui_oleh_id' => null,
+                'disetujui_oleh' => null,
+            ]);
+        }
+    
+        return redirect()->route('admin.izin.index')->with('success', 'Status izin berhasil diperbarui.');
+    }
+    
+
+    
+
+public function approve($id)
+{
+    $izin = Izin::findOrFail($id);
+
+    $izin->disetujui_oleh_id = auth()->user()->id;
+    $izin->disetujui_oleh = auth()->user()->name;
+    $izin->save();
+
+    return back()->with('success', 'Izin disetujui.');
+}
+
+public function reject($id)
+{
+    $izin = Izin::findOrFail($id);
+
+    $izin->disetujui_oleh_id = null;
+    $izin->disetujui_oleh = null;
+    $izin->save();
+
+    return back()->with('error', 'Izin ditolak.');
+}
+
+
     public function index()
     {
         $izin = Izin::all(); // Pastikan mengambil semua izin
